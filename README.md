@@ -134,3 +134,4 @@ This plugin operates entirely offline:
 
 MIT License. See [LICENSE](LICENSE) for full details.
 Audio asset `assets/complete.wav` is dedicated to the public domain under CC0 1.0 Universal / MIT.
+# omarchy-focus-timer
