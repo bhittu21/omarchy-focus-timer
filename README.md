@@ -44,15 +44,15 @@ You specify the **total session duration** you want to spend. The plugin calcula
 
 ## Installation
 
-### Via Official Omarchy CLI
+Install with Omarchy:
 
 ```bash
 omarchy plugin add https://github.com/bhittu21/omarchy-focus-timer.git --enable
 ```
 
-### Manual Installation
+### Manual Installation (From Source)
 
-Clone directly into the Omarchy plugins directory:
+To install or develop directly from source:
 
 ```bash
 git clone https://github.com/bhittu21/omarchy-focus-timer.git ~/.config/omarchy/plugins/io.github.bhittu21.omarchy-focus-timer
@@ -122,6 +122,21 @@ This plugin operates entirely offline:
 
 ---
 
+## Security & System Capabilities
+
+This repository is designed for transparency and straightforward manual marketplace review:
+
+- **Remote Source (`remote-build`)**: The automated marketplace baseline flags `remote-build` solely because this README documents how to obtain this public repository via `git clone`. The plugin contains no remote build steps, no external network downloads, and no post-install build scripts.
+- **Process Execution**:
+  - `mkdir -p ~/.cache/omarchy-focus-timer`: Standard initialization via Quickshell `Process` to ensure the local user cache directory exists.
+  - `notify-send`: Dispatches a local desktop notification upon session completion.
+  - `pw-play` / `paplay` / `aplay` / `canberra-gtk-play`: Plays the bundled offline WAV chime (`assets/complete.wav`) upon session completion.
+- **State & File System**: All state is strictly confined to `~/.cache/omarchy-focus-timer/state.json`. No shell configuration or system files are ever overwritten.
+- **Network & Privacy**: Fully offline. Zero network sockets, zero HTTP/HTTPS requests, zero analytics, zero telemetry.
+- **Privileges**: Runs entirely in unprivileged user space. No `sudo`, `pkexec`, or elevated permissions.
+
+---
+
 ## Compatibility
 
 - Designed and tested on **Omarchy Quattro (4.0.1+)**.
@@ -134,4 +149,3 @@ This plugin operates entirely offline:
 
 MIT License. See [LICENSE](LICENSE) for full details.
 Audio asset `assets/complete.wav` is dedicated to the public domain under CC0 1.0 Universal / MIT.
-# omarchy-focus-timer
