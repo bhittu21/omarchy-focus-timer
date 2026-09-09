@@ -14,6 +14,7 @@ BarWidget {
   moduleName: "io.github.bhittu21.omarchy-focus-timer"
 
   property var timerState: TimerEngine.createIdleState()
+  property int tickRevision: 0
   property var viewDetails: TimerEngine.computeViewDetails(timerState, Date.now())
   property bool stateLoaded: false
 
@@ -21,10 +22,27 @@ BarWidget {
   readonly property string stateFilePath: Persistence.getStateFilePath(homeDir)
   readonly property string soundAssetPath: Qt.resolvedUrl("assets/complete.wav").toString().replace(/^file:\/\//, "")
 
-  readonly property bool opened: panel.open
-  function open() { panel.open = true }
-  function close() { panel.open = false }
-  function toggle() { if (opened) close(); else open(); }
+  readonly property bool opened: panelLoader.item ? panelLoader.item.opened === true : false
+  function open() { if (panelLoader.item) panelLoader.item.open() }
+  function close() { if (panelLoader.item) panelLoader.item.close() }
+  function toggle() { if (panelLoader.item) panelLoader.item.toggle() }
+
+  function updateView() {
+    tickRevision++;
+    viewDetails = TimerEngine.computeViewDetails(root.timerState, Date.now());
+  }
+
+  function injectPanel() {
+    var target = panelLoader.item
+    if (!target) return
+    if ("bar" in target) target.bar = root.bar
+    if ("settings" in target) target.settings = root.settings
+    if ("anchorItem" in target) target.anchorItem = button
+    if ("hostWidget" in target) target.hostWidget = root
+  }
+
+  onBarChanged: injectPanel()
+  onSettingsChanged: injectPanel()
 
   function startSession(minutes) {
     var check = ScheduleGenerator.validateDurationInput(minutes);
@@ -32,23 +50,27 @@ BarWidget {
 
     var sched = ScheduleGenerator.generateSchedule(check.seconds);
     root.timerState = TimerEngine.startTimer(check.minutes, sched, Date.now());
+    root.updateView();
     root.persistState();
   }
 
   function pauseSession() {
     if (root.timerState.status !== "running") return;
     root.timerState = TimerEngine.pauseTimer(root.timerState, Date.now());
+    root.updateView();
     root.persistState();
   }
 
   function resumeSession() {
     if (root.timerState.status !== "paused") return;
     root.timerState = TimerEngine.resumeTimer(root.timerState, Date.now());
+    root.updateView();
     root.persistState();
   }
 
   function cancelSession() {
     root.timerState = TimerEngine.cancelTimer();
+    root.updateView();
     root.persistState();
   }
 
@@ -73,11 +95,13 @@ BarWidget {
       NotificationManager.notifySessionComplete(Quickshell, resolved.requestedMinutes);
       SoundManager.playSound(Quickshell, root.soundAssetPath);
       root.timerState = TimerEngine.createIdleState();
+      root.updateView();
       Qt.callLater(root.persistState);
       return;
     }
 
     root.timerState = resolved;
+    root.updateView();
   }
 
   // 1-second interval heartbeat
@@ -89,6 +113,7 @@ BarWidget {
     onTriggered: {
       var result = TimerEngine.tickTimer(root.timerState, Date.now());
       root.timerState = result.state;
+      root.updateView();
 
       if (result.event) {
         if (result.event.type === "completed") {
@@ -138,6 +163,7 @@ BarWidget {
     function resume(): void { root.resumeSession() }
     function cancel(): void { root.cancelSession() }
     function status(): string {
+      root.updateView();
       return JSON.stringify({
         status: root.timerState.status,
         remainingSeconds: root.viewDetails.remainingInPhase,
@@ -149,6 +175,7 @@ BarWidget {
 
   // Bar label computation
   readonly property string barLabel: {
+    var _ = root.tickRevision;
     if (!root.viewDetails.active) {
       return "FOCUS";
     }
@@ -163,6 +190,7 @@ BarWidget {
   }
 
   readonly property string barTooltip: {
+    var _ = root.tickRevision;
     if (!root.viewDetails.active) {
       return "Omarchy Focus Timer (Click to open)";
     }
@@ -194,18 +222,15 @@ BarWidget {
     }
   }
 
-  // The Popup Panel
-  Panel {
-    id: panel
-    anchorItem: button
-    bar: root.bar
-    owner: root
-    open: false
-    timerState: root.timerState
-
-    onStartRequested: function(minutes) { root.startSession(minutes) }
-    onPauseRequested: function() { root.pauseSession() }
-    onResumeRequested: function() { root.resumeSession() }
-    onCancelRequested: function() { root.cancelSession() }
+  // Panel Loader
+  Loader {
+    id: panelLoader
+    active: true
+    source: Qt.resolvedUrl("Panel.qml")
+    visible: false
+    onLoaded: {
+      root.injectPanel();
+      Qt.callLater(root.injectPanel);
+    }
   }
 }
