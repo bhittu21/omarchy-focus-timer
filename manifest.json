@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.bhittu21.omarchy-focus-timer",
+  "name": "Omarchy Focus Timer",
+  "version": "1.0.0",
+  "author": "bhittu21",
+  "license": "MIT",
+  "description": "A minimal offline focus timer with automatic breaks for Omarchy.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Focus Timer",
+    "category": "Productivity",
+    "allowMultiple": false,
+    "defaultSection": "center"
+  }
+}

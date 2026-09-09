@@ -1,0 +1,13 @@
+# State & runtime cache
+.cache/
+*.log
+
+# Editor & OS files
+.DS_Store
+*.swp
+*~
+.idea/
+.vscode/
+
+# Node (test harness dependencies if any)
+node_modules/
